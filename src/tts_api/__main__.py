@@ -11,6 +11,7 @@ from tts_api.utils.logging_utils import setup_logger
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config["SESSION_TYPE"] = "filesystem"
 for blueprint in blueprints:
     app.register_blueprint(blueprint)
 
