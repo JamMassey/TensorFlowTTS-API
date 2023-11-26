@@ -16,6 +16,8 @@ setuptools.setup(
     include_package_data=True,
     install_requires=install_requires,
     packages=setuptools.find_packages(where="src"),
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     entry_points={
         "console_scripts": [
             "tts_api=tts_api.__main__:main",
