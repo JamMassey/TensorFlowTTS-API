@@ -23,5 +23,4 @@ COPY README.md /api/README.md
 COPY src /api/src
 
 EXPOSE 5000
-ENTRYPOINT [ "python3"]
-CMD ["tts_api/app.py"]
+ENTRYPOINT [ "python3 src/tts_api/__main__.py" ]
