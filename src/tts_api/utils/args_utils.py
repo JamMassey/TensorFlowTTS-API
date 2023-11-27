@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from typing import OrderedDict
@@ -38,10 +39,11 @@ def add_boolean_arg(parser: ArgumentParser, name: str, desc: str, default: bool 
 class FlaskServerArgs:
     """Data Class for storing CL args"""
 
-    host: str = "0.0.0.0"
-    port: int = 5000
-    log_level: int = logging.INFO
-    console_log: bool = True
+    host: str = os.getenv("HOST", "0.0.0.0")
+    port: int = os.getenv("PORT", 5000)
+    log_level: int = os.getenv("LOG_LEVEL", logging.INFO)
+    console_log: bool = os.getenv("CONSOLE_LOG", True)
+    filesystem_root = os.getenv("FILESYSTEM_ROOT", "filesystem")
 
 
 def parse_flask_server_args() -> FlaskServerArgs:
@@ -61,6 +63,14 @@ def parse_flask_server_args() -> FlaskServerArgs:
         type=int,
         dest="log_level",
         help="The log level of logging",
+    )
+    arg_parser.add_argument(
+        "-fsr",
+        "--filesystem-root",
+        default="/app/filesystem",
+        type=str,
+        dest="filesystem_root",
+        help="The root of the filesystem to use",
     )
     add_boolean_arg(arg_parser, "console-log", "Log to console", default=True)
     return FlaskServerArgs(**OrderedDict(vars(arg_parser.parse_args())))
