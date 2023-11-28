@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import logging
+import os
 
-import requests
+import gdown
 import tensorflow as tf
 from tensorflow_tts.inference import AutoConfig, AutoProcessor, TFAutoModel
 
 logger = logging.getLogger(__name__)
+
 
 try:
     import matplotlib.pyplot as plt
@@ -14,8 +16,6 @@ try:
 except ImportError:
     logger.warning("Did not import matplotlib. Please ensure to install the right extras package if this was unintentional.")
 
-MELGAN_SFT_CONFIG_LINK = "https://drive.google.com/uc?id=1WB5iQbk9qB-Y-wO8BU6S2TnRiu4VU5ys"
-MELGAN_SFT_MODEL_LINK = "https://drive.google.com/uc?id=1OqdrcHJvtXwNasEZP7KXZwtGUDXMKNkg"
 
 TENSORFLOW_TTS_TEXT2MEL_PATHS = {
     "TACOTRON": "tensorspeech/tts-tacotron2-ljspeech-en",
@@ -78,23 +78,16 @@ def load_custom_model(model_name: str, model_path: str):
     return model
 
 
-def download_melgan_sft(config_output_path: str, model_output_path: str):
-    config_response = requests.get(MELGAN_SFT_CONFIG_LINK, allow_redirects=True)
-    model_response = requests.get(MELGAN_SFT_MODEL_LINK, allow_redirects=True)
-    with open(config_output_path, "wb") as config_file:
-        config_file.write(config_response.content)
-    with open(model_output_path, "wb") as model_file:
-        model_file.write(model_response.content)
+def download_melgan_sft(output_folder):
+    gdown.download(
+        "https://drive.google.com/uc?id=1WB5iQbk9qB-Y-wO8BU6S2TnRiu4VU5ys", os.path.join(output_folder, f"melgan_stft.yml"), quiet=False
+    )
+    gdown.download(
+        "https://drive.google.com/uc?id=1OqdrcHJvtXwNasEZP7KXZwtGUDXMKNkg", os.path.join(output_folder, f"melgan_stft.h5"), quiet=False
+    )
 
 
-def download_melgan_sft_inmem(config_output_path: str, model_output_path: str):
-    config_response = requests.get(MELGAN_SFT_CONFIG_LINK, allow_redirects=True)
-    model_response = requests.get(MELGAN_SFT_MODEL_LINK, allow_redirects=True)
-    config = AutoConfig.from_pretrained(config_response.content)
-    model = TFAutoModel.from_pretrained(config=config, pretrained_path=model_response.content, name="MELGAN-STFT")
-    return model
-
-
+# For now, if you want to register MelGAN-STFT, you need to do so manually using the functions provided.
 class Synthesizer:
     def __init__(self):
         self.text2mel_models = {}
@@ -162,14 +155,3 @@ def visualize_mel_spectrogram(mels: np.ndarray):
     im = ax1.imshow(np.rot90(mels), aspect="auto", interpolation="none")
     fig.colorbar(mappable=im, shrink=0.65, orientation="horizontal", ax=ax1)
     plt.show()
-
-
-# Downloading MelGAN-STFT model...
-# Downloading...
-# From: https://drive.google.com/uc?id=1WB5iQbk9qB-Y-wO8BU6S2TnRiu4VU5ys
-# To: /content/melgan.stft-2M.h5
-# 17.1MB [00:00, 80.1MB/s]
-# Downloading...
-# From: https://drive.google.com/uc?id=1OqdrcHJvtXwNasEZP7KXZwtGUDXMKNkg
-# To: /content/melgan.stft_config.yml
-# 100% 1.77k/1.77k [00:00<00:00, 1.69MB/s]
