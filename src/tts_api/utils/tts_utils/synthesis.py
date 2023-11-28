@@ -95,7 +95,7 @@ class Synthesizer:
         self.vocoder_models = {}
         self.processors = {}
 
-    def load_text2mel_model(self, model_name: str, model: TFAutoModel, model_function):
+    def load_text2mel_model(self, model_name: str, model: TFAutoModel, model_function: callable):
         self.text2mel_models[model_name] = model
         self.text2mel_model_functions[model_name] = model_function
 
