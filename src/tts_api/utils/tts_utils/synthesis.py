@@ -141,7 +141,24 @@ class Synthesizer:
         return {"text2mel": TENSORFLOW_TTS_TEXT2MEL_PATHS.keys(), "vocoder": TENSORFLOW_TTS_VOCODER_PATHS.keys()}
 
     def do_synthesis(self, input_text: str, text2mel_name: str, vocoder_name: str, processor_name: str | None = None):
-        input_ids = self.processors[processor_name if processor_name is not None else text2mel_name].text_to_sequence(input_text)
+        if text2mel_name not in self.text2mel_models:
+            raise ValueError(
+                f"Text2Mel model {text2mel_name} not loaded. Please load it first using load_text2mel_model() or register_known_text2mel_model(), or pick from loaded text2mel models:\n 
+                {self.list_text2mel_models()}\n For additional information on what processors are available out-of-the-box, please use list_tensorflow_tts_models()"
+            )
+        if vocoder_name not in self.vocoder_models:
+            raise ValueError(
+                f"Vocoder model {vocoder_name} not loaded. Please load it first using load_vocoder_model() or register_known_vocoder_model(), or pick from loaded vocoders:\n 
+                {self.list_vocoder_models()}\n For additional information on what processors are available out-of-the-box, please use list_tensorflow_tts_models()" 
+                )
+        processor_name  = processor_name if processor_name is not None else text2mel_name
+        if processor_name not in self.processors:
+            raise ValueError(
+                f"Processor {processor_name} not loaded. Please load it first or pick using load_processor() or register_known_processor(), or pick from loaded processors:\n 
+                {self.list_processors()}\n For additional information on what processors are available out-of-the-box, please use list_tensorflow_tts_models()"
+            )
+
+        input_ids = self.processors[processor_name].text_to_sequence(input_text)
         mel_outputs = self.text2mel_model_functions[text2mel_name](self.text2mel_models[text2mel_name], input_ids)
         audio = self.vocoder_models[vocoder_name](mel_outputs)[0, :, 0]
         return mel_outputs.numpy(), audio.numpy()
